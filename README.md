@@ -118,7 +118,6 @@ docs/
 
 ## Roadmap
 
-- Validate receiver firmware v2 on the tower hardware.
 - Log water-level events to a cloud database and dashboard for flood history.
 - Replace float switches with a continuous level sensor (ultrasonic or pressure) for finer readings and rate-of-rise alerts.
 - Move to a 4G modem.
