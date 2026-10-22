@@ -1,0 +1,6 @@
+config.h
+.vscode/
+.pio/
+build/
+*.bin
+.DS_Store
