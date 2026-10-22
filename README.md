@@ -114,9 +114,7 @@ docs/
 
 - **Daily self-test hours.** The comments say 10:00 and 20:00, but the code checks hours 6 and 22. This may be a time-zone offset from the network clock; it needs checking on the device.
 - **`S4_INTERVAL` is unused.** SIAGA 4 reuses the SIAGA 3 interval. Both are 20 min, so behaviour is the same today.
-- **RF remote pins have no internal pull-downs.** GPIO 34 to 39 on the ESP32 ignore `INPUT_PULLDOWN`, so the remote receiver must drive these pins actively.
 - **Blocking time queries.** `getTimestamp()` sends an AT command every 2 s for debug output, which slows the main loop.
-- **2G dependency.** The SIM800L only supports 2G. Operator coverage should be checked as 2G networks are phased out.
 
 ## Roadmap
 
