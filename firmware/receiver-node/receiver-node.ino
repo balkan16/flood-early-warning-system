@@ -5,8 +5,10 @@
  *
  * - Listens for SMS from the sensor node: "NORMAL" or "SIAGA n" (n = 1..4)
  * - Ignores SMS from any other number (no one can trigger the siren by texting it)
- * - Drives the 12 V tower siren through a relay with a pattern per level
- * - Repeats the siren burst per level (same intervals as the sensor node), max 3
+ * - Plays the pre-recorded audio for each stage on a DFPlayer Mini
+ *   (tracks 1-4 = SIAGA 1-4, track 5 = NORMAL), through an amplifier to the horn speakers
+ * - Relay powers the 12 V amplifier only while audio is playing
+ * - Repeats the audio per level (same intervals as the sensor node), max 3
  * - Treats the sensor node's daily self-test SMS as a heartbeat and warns the
  *   admin if nothing arrives for HEARTBEAT_TIMEOUT
  */
@@ -18,39 +20,41 @@
 #include "utilities.h"   // LilyGO board pin map + setupPMU()
 #include "config.h"      // phone numbers (not committed)
 #include <TinyGsmClient.h>
+#include <DFRobotDFPlayerMini.h>
 
 #define SerialMon Serial
 #define SerialAT  Serial1
 TinyGsm modem(SerialAT);
 
+HardwareSerial SerialDF(2);
+DFRobotDFPlayerMini myDFPlayer;
+
 // ========================================================
 //                    PIN DEFINITION
 // ========================================================
-#define PIN_RELAY 2                 // relay: 12 V siren power
+#define PIN_RX_DF 32                // DFPlayer UART
+#define PIN_TX_DF 33
+#define PIN_BUSY_DF 21              // DFPlayer BUSY (LOW while playing)
+#define PIN_RELAY 2                 // relay: 12 V amplifier power
 const int PIN_LED_SYSTEM = 25;
 
 // ========================================================
 //                    SETTINGS
 // ========================================================
-// Siren repeat interval per level (matches sensor node audio repeats)
+// Audio repeat interval per level (same as sensor node)
 const unsigned long REPEAT_INTERVAL[5] = {0, 10 * 60000UL, 15 * 60000UL, 20 * 60000UL, 20 * 60000UL};
-const int MAX_SIREN_REPEATS = 3;
-const unsigned long BURST_TIME = 60000;               // one siren burst lasts 60 s
+const int MAX_AUDIO_REPEATS = 3;
+const int TRACK_NORMAL = 5;
 const unsigned long SMS_SETTLE_TIME = 500;            // wait for the rest of a multi-line SMS
 const unsigned long HEARTBEAT_TIMEOUT = 26UL * 3600000UL;  // > 1 day with no SMS from sensor
-
-// Siren pattern per level: ON ms, OFF ms (OFF = 0 means continuous)
-const unsigned long PATTERN_ON[5]  = {0, 1000, 2000, 1000, 500};
-const unsigned long PATTERN_OFF[5] = {0,    0, 1000, 1000, 2500};
 
 // ========================================================
 //                    STATE
 // ========================================================
 int currentLevel = 0;               // 0 = NORMAL, 1..4 = SIAGA n
-int sirenCount = 0;
-bool burstActive = false;
-unsigned long burstStart = 0, lastBurstTime = 0, patternTime = 0;
-bool relayOn = false;
+int audioCount = 0;
+unsigned long lastAudioTime = 0;
+bool isPlayerOk = false;
 
 unsigned long lastBlinkTime = 0, lastHeartbeat = 0;
 bool heartbeatWarned = false;
@@ -76,8 +80,14 @@ void setup() {
     SerialMon.begin(115200);
     pinMode(PIN_LED_SYSTEM, OUTPUT);
     pinMode(PIN_RELAY, OUTPUT); digitalWrite(PIN_RELAY, LOW);
+    pinMode(PIN_BUSY_DF, INPUT);
 
     setupPMU();
+    SerialDF.begin(9600, SERIAL_8N1, PIN_RX_DF, PIN_TX_DF);
+    if (myDFPlayer.begin(SerialDF)) {
+        isPlayerOk = true;
+        myDFPlayer.volume(28);
+    }
     setupModem();
 
     // Same baud rate as the sensor node for character stability
@@ -128,15 +138,10 @@ void handleSms(const String& sender, const String& body) {
     if (level == currentLevel) return;                  // no change
 
     currentLevel = level;
-    sirenCount = 0;
     String status = (level == 0) ? "NORMAL" : "SIAGA " + String(level);
     SerialMon.println("[EVENT] Status: " + status);
 
-    if (level == 0) {
-        stopSiren();
-    } else {
-        startBurst();
-    }
+    playStage(level);   // track 1-4 for SIAGA, track 5 for NORMAL (played once)
     modem.sendSMS(ADMIN_NUMBER, "EWS RECEIVER: " + status + " diterima");  // "received"
 }
 
@@ -169,37 +174,27 @@ void readModem() {
 }
 
 // ========================================================
-//                    SIREN
+//                    AUDIO
 // ========================================================
-void setRelay(bool on) {
-    if (on != relayOn) { relayOn = on; digitalWrite(PIN_RELAY, on ? HIGH : LOW); }
+void playStage(int level) {
+    if (!isPlayerOk) { SerialMon.println(F("[AUDIO] DFPlayer not ready.")); return; }
+    myDFPlayer.play(level == 0 ? TRACK_NORMAL : level);
+    audioCount = 1;
+    lastAudioTime = millis();
+    SerialMon.println("[AUDIO] Playing track for level " + String(level));
 }
 
-void startBurst() {
-    burstActive = true;
-    burstStart = patternTime = lastBurstTime = millis();
-    sirenCount++;
-    setRelay(true);
-    SerialMon.println("[SIREN] Burst " + String(sirenCount) + " for level " + String(currentLevel));
-}
+void updateAudio() {
+    // Relay ON only while the DFPlayer is playing (powers the amplifier)
+    digitalWrite(PIN_RELAY, (digitalRead(PIN_BUSY_DF) == LOW) ? HIGH : LOW);
 
-void stopSiren() {
-    burstActive = false;
-    setRelay(false);
-}
-
-void updateSiren() {
-    if (currentLevel == 0) return;
-
-    if (burstActive) {
-        if (millis() - burstStart >= BURST_TIME) { stopSiren(); return; }
-        unsigned long onT = PATTERN_ON[currentLevel], offT = PATTERN_OFF[currentLevel];
-        if (offT == 0) { setRelay(true); return; }      // continuous
-        unsigned long phase = (millis() - patternTime) % (onT + offT);
-        setRelay(phase < onT);
-    } else if (sirenCount < MAX_SIREN_REPEATS &&
-               millis() - lastBurstTime >= REPEAT_INTERVAL[currentLevel]) {
-        startBurst();
+    // Repeat the stage audio while an alert is active
+    if (currentLevel > 0 && isPlayerOk && audioCount < MAX_AUDIO_REPEATS &&
+        millis() - lastAudioTime >= REPEAT_INTERVAL[currentLevel]) {
+        myDFPlayer.play(currentLevel);
+        audioCount++;
+        lastAudioTime = millis();
+        SerialMon.println("[AUDIO] Repeat " + String(audioCount) + " for level " + String(currentLevel));
     }
 }
 
@@ -213,7 +208,7 @@ void loop() {
     }
 
     readModem();
-    updateSiren();
+    updateAudio();
 
     // Lost contact with the sensor node: warn the admin once
     if (!heartbeatWarned && millis() - lastHeartbeat >= HEARTBEAT_TIMEOUT) {
