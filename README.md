@@ -1,16 +1,14 @@
 # Flood Early Warning System (ESP32 + GSM)
 
-A low-cost, solar-powered flood early warning system for a riverside neighborhood in Bekasi, Indonesia. A sensor node at the river reads the water level with float switches, plays voice alerts through a local siren, and sends SMS alerts over 2G GSM. A receiver node on a siren tower turns those SMS messages into the same pre-recorded voice alerts for the wider area. Residents also receive the SMS as a backup in case a siren fails.
+A low-cost flood early warning system with a solar-powered riverside sensor, built for a riverside neighborhood in Bekasi, Indonesia. A sensor node at the river reads the water level with float switches, plays voice alerts through a local siren, and sends SMS alerts over 2G GSM. A receiver node on a siren tower turns those SMS messages into the same pre-recorded voice alerts for the wider area. Residents also receive the SMS as a backup in case a siren fails.
 
 **Status:** sensor node deployed (firmware V9.1) and in active development since January 2026.
 
-![Installation overview](docs/installation-diagram.svg)
-
-## How it works
-
 ![Animated walkthrough](docs/flood-ews-animation.gif)
 
-*A 23-second walkthrough: water rises past each float, the sensor node alerts, the SMS reaches the tower and phones, then the river returns to normal. Full-quality video: [docs/flood-ews-animation.mp4](docs/flood-ews-animation.mp4).*
+*Water rises past each float, the sensor node alerts, the SMS reaches the tower and phones, then the river returns to normal. Full-quality video: [docs/flood-ews-animation.mp4](docs/flood-ews-animation.mp4).*
+
+## How it works
 
 1. **Sense.** Four float switches sit at different heights inside a stilling pipe at the river. Each one closes to ground when the water reaches it.
 2. **Decide.** The ESP32 maps the highest active float to an alert level, from `SIAGA 4` (lowest float) to `SIAGA 1` (highest float, most severe). A level only counts after it holds for 5 s, and status changes are at least 60 s apart, so waves and debris do not cause false alarms.
@@ -106,7 +104,6 @@ firmware/
   receiver-node/    receiver firmware v2 for the siren tower
   archive/          earlier versions (sensor v1, receiver v1)
 docs/
-  installation-diagram.svg
   flood-ews-animation.gif / .mp4
   hardware-diagram.svg
 ```
