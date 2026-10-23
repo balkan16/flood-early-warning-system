@@ -13,7 +13,7 @@
   <rect width="1280" height="1010" fill="#ffffff"/>
   <text x="30" y="34" font-size="22" font-weight="700" fill="#0f172a">Flood Early Warning System: Hardware Overview</text>
   <text x="30" y="54" class="s">Sensor node runs firmware V9.1 (deployed). The receiver node plays the same stage audio at the tower from the SMS; people also get the SMS as a backup.</text>
-  <text x="30" y="69" class="s">Each node runs on a solar-charged 12 V 7.5 Ah battery.</text>
+  <text x="30" y="69" class="s">Sensor node: solar-charged 12 V 7.5 Ah battery. Siren tower: 220 V AC mains.</text>
 
   <!-- ================= SENSOR NODE ================= -->
   <rect x="30" y="85" width="590" height="680" rx="12" fill="#f8fafc" stroke="#94a3b8"/>
@@ -129,20 +129,17 @@
   <text x="897" y="318" class="mono" text-anchor="middle">PWRKEY GPIO4 / POWER GPIO23</text>
   <text x="897" y="338" class="mono" text-anchor="middle">RST GPIO5 / LED GPIO25</text>
 
-  <rect x="1070" y="140" width="130" height="56" rx="6" fill="#fef9c3" stroke="#a16207"/>
-  <text x="1135" y="164" text-anchor="middle" class="t b">Solar panel</text>
-  <text x="1135" y="181" text-anchor="middle" class="s">+ charge controller</text>
-  <rect x="1070" y="225" width="130" height="44" rx="22" fill="#fee2e2" stroke="#b91c1c"/>
-  <text x="1135" y="252" text-anchor="middle" class="t b">12 V 7.5 Ah</text>
-  <rect x="1070" y="300" width="130" height="50" rx="6" fill="#fee2e2" stroke="#b91c1c"/>
-  <text x="1135" y="321" text-anchor="middle" class="t b">Step-down</text>
-  <text x="1135" y="338" text-anchor="middle" class="s">12 V to 5 V</text>
+  <rect x="1070" y="140" width="130" height="56" rx="6" fill="#fee2e2" stroke="#b91c1c"/>
+  <text x="1135" y="164" text-anchor="middle" class="t b">220 V AC mains</text>
+  <text x="1135" y="181" text-anchor="middle" class="s">near the tower</text>
+  <rect x="1070" y="225" width="130" height="50" rx="6" fill="#fee2e2" stroke="#b91c1c"/>
+  <text x="1135" y="246" text-anchor="middle" class="t b">AC adapter</text>
+  <text x="1135" y="263" text-anchor="middle" class="s">220 V AC to 5 V, 5 A</text>
   <path d="M1135 196 L1135 221" class="pw" marker-end="url(#arP)"/>
-  <path d="M1135 269 L1135 296" class="pw" marker-end="url(#arP)"/>
-  <path d="M1070 325 L1036 325" class="pw" marker-end="url(#arP)"/>
-  <text x="1040" y="318" class="mono">5 V</text>
-  <path d="M1200 247 L1222 247 L1222 490 L1084 490" class="pw" marker-end="url(#arP)"/>
-  <text x="1184" y="420" class="mono">12 V</text>
+  <path d="M1070 250 L1036 250" class="pw" marker-end="url(#arP)"/>
+  <text x="1040" y="243" class="mono">5 V</text>
+  <path d="M1200 168 L1222 168 L1222 490 L1084 490" class="pw" marker-end="url(#arP)"/>
+  <text x="1150" y="420" class="mono">220 V AC</text>
 
   <rect x="780" y="455" width="120" height="56" rx="6" fill="#e0e7ff" stroke="#4338ca"/>
   <text x="840" y="478" text-anchor="middle" class="t b">DFPlayer Mini</text>
@@ -155,8 +152,8 @@
   <text x="1005" y="495" text-anchor="middle" class="s">GPIO2, ON while BUSY</text>
   <path d="M1005 370 L1005 451" class="w" marker-end="url(#ar)"/>
   <rect x="930" y="545" width="150" height="50" rx="6" fill="#fce7f3" stroke="#be185d" stroke-width="1.6"/>
-  <text x="1005" y="567" text-anchor="middle" class="t b">TDA2005 amp</text>
-  <text x="1005" y="583" text-anchor="middle" class="s">12 V, mono BTL</text>
+  <text x="1005" y="567" text-anchor="middle" class="t b">Amplifier</text>
+  <text x="1005" y="583" text-anchor="middle" class="s">220 V AC</text>
   <path d="M1005 511 L1005 541" class="pw" marker-end="url(#arP)"/>
   <path d="M840 511 L840 570 L926 570" class="sig" marker-end="url(#arR)"/>
   <text x="790" y="590" class="s">MP3 audio</text>

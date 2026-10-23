@@ -7,7 +7,7 @@
  * - Ignores SMS from any other number (no one can trigger the siren by texting it)
  * - Plays the pre-recorded audio for each stage on a DFPlayer Mini
  *   (tracks 1-4 = SIAGA 1-4, track 5 = NORMAL), through an amplifier to the horn speakers
- * - Relay powers the 12 V amplifier only while audio is playing
+ * - Relay switches 220 V AC to the amplifier only while audio is playing
  * - Repeats the audio per level (same intervals as the sensor node), max 3
  * - Treats the sensor node's daily self-test SMS as a heartbeat and warns the
  *   admin if nothing arrives for HEARTBEAT_TIMEOUT
@@ -35,7 +35,7 @@ DFRobotDFPlayerMini myDFPlayer;
 #define PIN_RX_DF 32                // DFPlayer UART
 #define PIN_TX_DF 33
 #define PIN_BUSY_DF 21              // DFPlayer BUSY (LOW while playing)
-#define PIN_RELAY 2                 // relay: 12 V amplifier power
+#define PIN_RELAY 2                 // relay: 220 V AC to amplifier
 const int PIN_LED_SYSTEM = 25;
 
 // ========================================================

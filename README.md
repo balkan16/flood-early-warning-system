@@ -4,7 +4,7 @@ A low-cost, solar-powered flood early warning system for a riverside neighborhoo
 
 **Status:** sensor node deployed (firmware V9.1) and in active development since January 2026.
 
-![Hardware overview](docs/hardware-diagram.svg)
+![Installation overview](docs/installation-diagram.svg)
 
 ## How it works
 
@@ -65,19 +65,23 @@ The tower receiver (firmware v2) plays the same pre-recorded track for each stag
 
 ## Hardware
 
-Both nodes run from a 12 V 7.5 Ah battery charged by a solar panel through a solar charge controller. A step-down converter supplies 5 V to the board, and the same 12 V battery powers the amplifier and siren.
+The sensor node runs from a 12 V 7.5 Ah battery charged by a solar panel through a solar charge controller; a step-down converter supplies 5 V to the board, and the same battery powers the amplifier and siren. The siren tower runs on 220 V AC mains: a 5 V 5 A adapter powers the board, and the relay switches 220 V to the amplifier only while audio is playing.
+
+![Hardware overview](docs/hardware-diagram.svg)
 
 | Part | Sensor node | Receiver node |
 |---|---|---|
 | LilyGO TTGO T-Call (ESP32 + SIM800L, IP5306 version 20200811) | ✓ | ✓ |
 | Float switches (x4) in a stilling pipe | ✓ | |
 | DFPlayer Mini MP3 module + microSD card | ✓ | ✓ |
-| TDA2005 bridged (BTL) mono amplifier module, 12 V | ✓ | ✓ |
+| TDA2005 bridged (BTL) mono amplifier module, 12 V | ✓ | |
+| Amplifier, 220 V AC | | ✓ |
 | 4-channel RF remote receiver | ✓ | |
 | Relay module | ✓ | ✓ |
-| 12 V siren / horn speaker | ✓ | ✓ (on lattice tower) |
-| 12 V 7.5 Ah battery, solar panel, solar charge controller | ✓ | ✓ |
-| 12 V to 5 V step-down converter | ✓ | ✓ |
+| Siren / horn speakers | ✓ (12 V) | ✓ (on lattice tower) |
+| 12 V 7.5 Ah battery, solar panel, solar charge controller | ✓ | |
+| 12 V to 5 V step-down converter | ✓ | |
+| 220 V AC to 5 V 5 A adapter | | ✓ |
 
 ### Pin map
 
@@ -98,6 +102,7 @@ firmware/
   receiver-node/    receiver firmware v2 for the siren tower
   archive/          earlier versions (sensor v1, receiver v1)
 docs/
+  installation-diagram.svg
   hardware-diagram.svg
 ```
 
