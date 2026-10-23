@@ -125,9 +125,7 @@ docs/
 
 ## Roadmap
 
-- Log water-level events to a cloud database and dashboard for flood history.
-- Replace float switches with a continuous level sensor (ultrasonic or pressure) for finer readings and rate-of-rise alerts.
-- Move to a 4G modem.
+- Add Wi-Fi as an alternative link between the sensor node and the siren tower. Both posts have Wi-Fi nearby, so the ESP32's built-in Wi-Fi can carry alerts alongside SMS as a second path if the GSM network is slow or down.
 
 ## Credits
 
