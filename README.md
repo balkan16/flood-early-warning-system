@@ -14,7 +14,7 @@ A low-cost flood early warning system with a solar-powered riverside sensor, bui
 2. **Decide.** The ESP32 maps the highest active float to an alert level, from `SIAGA 4` (lowest float) to `SIAGA 1` (highest float, most severe). A level only counts after it holds for 5 s, and status changes are at least 60 s apart, so waves and debris do not cause false alarms.
 3. **Alert locally.** A DFPlayer Mini plays a voice announcement for the level. A relay switches 12 V to the amplifier only while audio is playing, which saves battery.
 4. **Alert remotely.** The SIM800L modem sends `NORMAL` or `SIAGA n` with a timestamp by SMS to the receiver node and to people's phones.
-5. **Siren tower.** The receiver node accepts SMS only from the sensor node's number and plays the pre-recorded audio for that stage on its own DFPlayer, through an amplifier to the horn speakers.
+5. **Siren tower.** The receiver node reads each new SMS, matches `SIAGA 1` to `SIAGA 4` or `NORMAL`, and plays the pre-recorded audio for that stage on its own DFPlayer through the amplifier to the horn speakers. The audio repeats every 35 s until `NORMAL` arrives.
 6. **Self-test.** Twice a day the sensor node plays a song and sends a "system working normally" SMS, so the operators know it is still alive.
 
 A 4-channel RF remote can also force any alert level by hand, for drills or when someone sees flooding first.
@@ -38,17 +38,16 @@ sequenceDiagram
     S->>G: SMS "EWS BEKASI: SIAGA n" + time
     G->>R: Primary number (receiver SIM)
     G->>P: Secondary number (NORMAL, SIAGA 1-2 only)
-    R->>R: Check sender, parse level
+    R->>R: Read inbox, match level
     R->>T: Play pre-recorded audio for level n
-    R->>G: Acknowledge to admin
-    loop While level is active (max 3 times)
-        S->>L: Repeat voice alert (10/15/20 min)
-        R->>T: Repeat audio (10/15/20 min)
+    loop While level is active
+        S->>L: Repeat voice alert (10/15/20 min, max 3)
+        R->>T: Repeat audio every 35 s
     end
     F->>S: Water drops below all floats
     S->>G: SMS "EWS BEKASI: NORMAL"
     G->>R: NORMAL
-    R->>T: Play NORMAL audio once
+    R->>T: Stop audio
 ```
 
 ## Alert levels (sensor node V9.1)
@@ -63,11 +62,11 @@ sequenceDiagram
 
 *Siaga* means "alert" in Indonesian. Level 1 is the most severe, following the Indonesian convention.
 
-The tower receiver (firmware v2) plays the same pre-recorded track for each stage and repeats it on the same schedule, so residents near the river and near the tower hear the same message.
+The tower receiver plays the same pre-recorded track for each stage and repeats it every 35 s until it receives `NORMAL`, so residents near the tower hear the alert for as long as it lasts.
 
 ## Hardware
 
-The sensor node runs from a 12 V 7.5 Ah battery charged by a solar panel through a solar charge controller; a step-down converter supplies 5 V to the board, and the same battery powers the amplifier and siren. The siren tower runs on 220 V AC mains: a 5 V 5 A adapter powers the board, and the relay switches 220 V to the amplifier only while audio is playing.
+The sensor node runs from a 12 V 7.5 Ah battery charged by a solar panel through a solar charge controller; a step-down converter supplies 5 V to the board, and the same battery powers the amplifier and siren. The siren tower runs on 220 V AC mains: a 5 V 5 A adapter powers the board, and the amplifier stays powered while a relay controls when it is used.
 
 ![Hardware overview](docs/hardware-diagram.svg)
 
@@ -91,8 +90,8 @@ The sensor node runs from a 12 V 7.5 Ah battery charged by a solar panel through
 |---|---|---|
 | Float S1 / S2 / S3 / S4 | 12 / 14 / 15 / 13 (INPUT_PULLUP, active LOW) | |
 | RF remote A / B / C / D | 35 / 36 / 39 / 34 | |
-| DFPlayer RX / TX / BUSY | 32 / 33 / 21 | 32 / 33 / 21 |
-| Relay (amplifier power) | 2 | 2 |
+| DFPlayer RX / TX / BUSY | 32 / 33 / 21 | 32 / 33 / not used |
+| Relay (amplifier) | 2 | not driven by firmware |
 | Status LED | 25 | 25 |
 | SIM800L | LilyGO `utilities.h` | LilyGO `utilities.h` |
 
@@ -101,7 +100,7 @@ The sensor node runs from a 12 V 7.5 Ah battery charged by a solar panel through
 ```
 firmware/
   sensor-node/      V9.1, the firmware deployed at the river
-  receiver-node/    receiver firmware v2 for the siren tower
+  receiver-node/    receiver firmware for the siren tower (deployed)
   archive/          earlier versions (sensor v1, receiver v1)
 docs/
   flood-ews-animation.gif / .mp4
@@ -113,8 +112,8 @@ docs/
 1. Install the ESP32 board package in the Arduino IDE and select **ESP32 Dev Module**.
 2. Install the libraries **TinyGSM** and **DFRobotDFPlayerMini**.
 3. Copy `utilities.h` from LilyGO's [T-Call SIM800 examples](https://github.com/Xinyuan-LilyGO/LilyGo-T-Call-SIM800) into each firmware folder.
-4. In each firmware folder, copy `config.example.h` to `config.h` and fill in the phone numbers. `config.h` is git-ignored.
-5. Put the MP3 files on each DFPlayer's microSD card: `0001` to `0004` for SIAGA 1 to 4 and `0005` for NORMAL (both nodes), plus `0006` and `0007` for the daily self-test songs (sensor node).
+4. In `firmware/sensor-node`, copy `config.example.h` to `config.h` and fill in the phone numbers. `config.h` is git-ignored. The receiver needs no configuration.
+5. Put the MP3 files on each DFPlayer's microSD card: `0001` to `0004` for SIAGA 1 to 4 (both nodes), plus `0005` for NORMAL and `0006` and `0007` for the daily self-test songs (sensor node).
 6. **The tower receiver's SIM is always the sensor node's primary number** (`PRIMARY_NUMBER`). The secondary number is a person's phone for backup alerts; it never receives SIAGA 3, SIAGA 4, or the daily self-test.
 
 ## Known issues
