@@ -8,6 +8,10 @@ A low-cost, solar-powered flood early warning system for a riverside neighborhoo
 
 ## How it works
 
+![Animated walkthrough](docs/flood-ews-animation.gif)
+
+*A 23-second walkthrough: water rises past each float, the sensor node alerts, the SMS reaches the tower and phones, then the river returns to normal. Full-quality video: [docs/flood-ews-animation.mp4](docs/flood-ews-animation.mp4).*
+
 1. **Sense.** Four float switches sit at different heights inside a stilling pipe at the river. Each one closes to ground when the water reaches it.
 2. **Decide.** The ESP32 maps the highest active float to an alert level, from `SIAGA 4` (lowest float) to `SIAGA 1` (highest float, most severe). A level only counts after it holds for 5 s, and status changes are at least 60 s apart, so waves and debris do not cause false alarms.
 3. **Alert locally.** A DFPlayer Mini plays a voice announcement for the level. A relay switches 12 V to the amplifier only while audio is playing, which saves battery.
@@ -103,6 +107,7 @@ firmware/
   archive/          earlier versions (sensor v1, receiver v1)
 docs/
   installation-diagram.svg
+  flood-ews-animation.gif / .mp4
   hardware-diagram.svg
 ```
 
